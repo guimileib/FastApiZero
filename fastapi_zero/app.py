@@ -1,9 +1,10 @@
 from http import HTTPStatus
 
 from fastapi import FastAPI
+
 from fastapi.responses import HTMLResponse
-from fastapi_zero.schemas import UserSchema
-from fastapi_zero.schemas import Message
+
+from fastapi_zero.schemas import Message, UserSchema, UserPublic
 
 app = FastAPI(title='FastAPI Succeed')
 
@@ -20,7 +21,7 @@ def read_root():
     status_code=HTTPStatus.OK,
     response_class=HTMLResponse
 )
-def read_root2():
+def return_html():
     return """
     <html>
         <body>
@@ -29,9 +30,9 @@ def read_root2():
     </html>"""
 
 @app.post(
-    "/user", 
+    "/users/", 
     status_code=HTTPStatus.CREATED, 
-    response_model=UserSchema
+    response_model=UserPublic
 )
 def creat_user(user: UserSchema):
     return user
