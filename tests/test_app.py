@@ -24,3 +24,18 @@ def test_root_dev_retornar_hello_world():
     response = client.get("/exercicio00")
     assert response.status_code == HTTPStatus.OK
     assert "<h1>Hello World!</h1>" in response.text
+
+
+def test_creat_user():
+    client = TestClient(app)
+
+    client.post(
+        "/users/",
+        json={
+            "username": "bob",
+            "password": "bob@example.com",
+            "email": "secret",
+        },
+    )
+
+    assert response.status == HTTPStatus.CREATED
