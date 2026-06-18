@@ -79,6 +79,7 @@ def delete_user(user_id: int):
         )
     return database.pop(user_id - 1)
 
+
 @app.get(
     '/users/{user_id}',
     status_code=HTTPStatus.OK
