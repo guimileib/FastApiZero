@@ -3,6 +3,12 @@ from http import HTTPStatus
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
 
+from sqlalchemy import create_engine, select
+from sqlalchemy.orm import Session
+
+from fastapi_zero.models import User
+from fastapi_zero.settings import Settings
+
 from fastapi_zero.schemas import (
     Message,
     UserDB,
@@ -34,12 +40,40 @@ def return_html():
 
 @app.post("/users/", status_code=HTTPStatus.CREATED, response_model=UserPublic)
 def create_user(user: UserSchema):
-    user_with_id = UserDB(**user.model_dump(), id=len(database) + 1)
+    engine = create_engine(Settings().DATABASE_URL)
 
-    database.append(user_with_id)
+    session = Session(engine)
+    # ou retorna User | None
+    db_user = session.scalar(
+        select(User).where(
+            (User.username == user.username) | (User.email == user.email)
+        )
+    )
+    
+    if db_user:
+        # Se ele já existir
+        if db_user.username == user.username:
+            raise HTTPException(
+                deltail='Username alredy exists',
+                status_code=HTTPStatus.CONFLICT
+            )
+        elif db_user.email == user.email:
+            raise HTTPException(
+            detail='Username alredy exists',
+            status_code=HTTPStatus.CONFLICT
+            )
+    # Se nao der erro
+    db_user = User(
+        username=user.username,
+        email=user.email,
+        password=user.password,
+    )
 
-    return user_with_id
+    session.add(db_user) # adiciona na sessão
+    session.commit() # efetiva a transação
+    session.refresh(db_user) # traz o dado que ta dentro do banco de dados para sessão
 
+    return db_user
 
 @app.get("/users/", status_code=HTTPStatus.OK, response_model=UserList)
 def read_users():
