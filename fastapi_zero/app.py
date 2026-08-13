@@ -51,10 +51,10 @@ def create_user(user: UserSchema, session=Depends(get_session)):
             )
         elif db_user.email == user.email:
             raise HTTPException(
-                detail="Username alredy exists",
+                detail="Email alredy exists",
                 status_code=HTTPStatus.CONFLICT,
             )
-
+        
     # Se nao der erro
     db_user = User(
         username=user.username,
@@ -127,14 +127,14 @@ def delete_user(user_id: int, session=Depends(get_session)):
     return {"message": "User deleted"}
 
 
-"""
-@app.get("/users/{user_id}", status_code=HTTPStatus.OK)
-def read_user_name(user_id: int):
-    if user_id < 1 or user_id > len(database):
+# Endpoint Listagem de por Id
+@app.get("/users/{user_id}", status_code=HTTPStatus.OK, response_model=UserPublic)
+def read_user_name(user_id: int, session=Depends(get_session)):
+    user_db = session.scalar(select(User).where(User.id == user_id))
+    if not user_db:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND,
-            detail="User not found",
+            detail="User not found"
         )
-
-    user = database[user_id - 1]
-    return {"username": user.username}"""
+    else:
+        return user_db
