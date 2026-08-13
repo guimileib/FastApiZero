@@ -43,6 +43,27 @@ def test_create_user(client):
         "username": "bob",
     }
 
+def test_alredy_create_user(client, user):
+    client.post(
+        "/users/",
+        json={
+            "username": "bob",
+            "email": "bob@example.com",
+            "password": "secret",
+        },
+    )
+
+    response = client.put(
+        f'/users/{user.id}',
+        json={
+            "username": "bob",
+            "email": "bob@example.com",
+            "password": "secret",
+        }
+    )
+
+    assert response.status_code == HTTPStatus.CONFLICT 
+    assert response.json() == {'detail': 'Username or Email alredy exists'}
 
 # smell code, quando um teste fica grudado em outro
 def test_read_users(client):
