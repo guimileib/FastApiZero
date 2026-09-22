@@ -2,6 +2,7 @@ from http import HTTPStatus
 
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 
@@ -13,6 +14,7 @@ from fastapi_zero.schemas import (
     UserPublic,
     UserSchema,
 )
+from fastapi_zero.security import get_password_hash
 
 app = FastAPI(title="FastAPI Succeed")
 
@@ -54,7 +56,7 @@ def create_user(user: UserSchema, session=Depends(get_session)):
                 detail="Email alredy exists",
                 status_code=HTTPStatus.CONFLICT,
             )
-        
+
     # Se nao der erro
     db_user = User(
         username=user.username,
@@ -72,9 +74,7 @@ def create_user(user: UserSchema, session=Depends(get_session)):
 
 
 @app.get("/users/", status_code=HTTPStatus.OK, response_model=UserList)
-def read_users(
-    limit: int = 10, offset: int = 10, session=Depends(get_session)
-):
+def read_users(limit: int = 10, offset: int = 0, session=Depends(get_session)):
 
     users = session.scalars(select(User).limit(limit).offset(offset))
     return {"users": users}
@@ -96,7 +96,7 @@ def update_user(user_id: int, user: UserSchema, session=Depends(get_session)):
     try:
         user_db.email = user.email
         user_db.username = user.username
-        user_db.password = user.password
+        user_db.password = get_password_hash(user.password)
 
         session.add(user_db)
         session.commit()
@@ -111,7 +111,7 @@ def update_user(user_id: int, user: UserSchema, session=Depends(get_session)):
 
 
 @app.delete(
-    "/users/{user_id}", status_code=HTTPStatus.OK, response_model=UserPublic
+    "/users/{user_id}", status_code=HTTPStatus.OK, response_model=Message
 )
 def delete_user(user_id: int, session=Depends(get_session)):
     user_db = session.scalar(select(User).where(User.id == user_id))
@@ -128,13 +128,21 @@ def delete_user(user_id: int, session=Depends(get_session)):
 
 
 # Endpoint Listagem de por Id
-@app.get("/users/{user_id}", status_code=HTTPStatus.OK, response_model=UserPublic)
+@app.get(
+    "/users/{user_id}", status_code=HTTPStatus.OK, response_model=UserPublic
+)
 def read_user_name(user_id: int, session=Depends(get_session)):
     user_db = session.scalar(select(User).where(User.id == user_id))
     if not user_db:
         raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND,
-            detail="User not found"
+            status_code=HTTPStatus.NOT_FOUND, detail="User not found"
         )
     else:
         return user_db
+
+
+@app.post("/token")
+def login_for_acess_token(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    session=Depends(get_session),
+): ...

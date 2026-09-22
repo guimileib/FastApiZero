@@ -34,20 +34,22 @@ def test_update_user(session, mock_db_time):
     with mock_db_time(model=User) as time:
         new_user = User(username="test", email="email@test", password="secret")
 
-    session.add(new_user)  # faz a inserção
-    session.commit()
+        session.add(new_user)  # faz a inserção
+        session.commit()
 
-    new_user.username = "test_updated"  # faz o update do user
-    session.commit()
-    session.refresh(new_user)
+        new_user.username = "test_updated"  # faz o update do user
+        session.commit()
+        session.refresh(new_user)
 
-    user = session.scalar(select(User).where(User.username == "test_updated"))
+        user = session.scalar(
+            select(User).where(User.username == "test_updated")
+        )
 
-    assert asdict(user) == {
-        "id": 1,
-        "username": "test_updated",
-        "email": "email@test",
-        "password": "secret",
-        "created_at": time,
-        "updated_at": time,
-    }
+        assert asdict(user) == {
+            "id": 1,
+            "username": "test_updated",
+            "email": "email@test",
+            "password": "secret",
+            "created_at": time,
+            "updated_at": time,
+        }

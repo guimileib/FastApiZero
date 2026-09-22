@@ -15,6 +15,7 @@ class UserPublic(BaseModel):
     id: int
     username: str
     email: EmailStr
+    # o pydantic consegue ler os atributos
     model_config = ConfigDict(from_attributes=True)
 
 
