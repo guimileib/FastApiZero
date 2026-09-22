@@ -61,10 +61,11 @@ def _mock_db_item(model, time=datetime(2026, 6, 21)):
 
     event.listen(model, "before_insert", fake_time_hook)
     event.listen(model, "before_update", fake_time_hook)
-    yield time
-
-    event.remove(model, "before_insert", fake_time_hook)
-    event.remove(model, "before_update", fake_time_hook)
+    try:
+        yield time
+    finally:
+        event.remove(model, "before_insert", fake_time_hook)
+        event.remove(model, "before_update", fake_time_hook)
 
 
 # crio uma estrutura para sempre reutilizar, quando tem created_at

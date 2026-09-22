@@ -45,11 +45,17 @@ def test_update_user(session, mock_db_time):
             select(User).where(User.username == "test_updated")
         )
 
-        assert asdict(user) == {
+        user_dict = asdict(user)
+
+        # o onupdate=func.now() é gerado pelo banco, então o valor
+        # exato não é mockável, o que importa é que ele avançou
+        assert user_dict["updated_at"] > user_dict["created_at"]
+
+        del user_dict["updated_at"]
+        assert user_dict == {
             "id": 1,
             "username": "test_updated",
             "email": "email@test",
             "password": "secret",
             "created_at": time,
-            "updated_at": time,
         }
