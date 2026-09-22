@@ -43,6 +43,7 @@ def test_create_user(client):
         "username": "bob",
     }
 
+
 def test_alredy_create_user(client, user):
     client.post(
         "/users/",
@@ -54,22 +55,16 @@ def test_alredy_create_user(client, user):
     )
 
     response = client.put(
-        f'/users/{user.id}',
+        f"/users/{user.id}",
         json={
             "username": "bob",
             "email": "bob@example.com",
             "password": "secret",
-        }
+        },
     )
 
-    assert response.status_code == HTTPStatus.CONFLICT 
-    assert response.json() == {'detail': 'Username or Email alredy exists'}
-
-# smell code, quando um teste fica grudado em outro
-def test_read_users(client):
-    response = client.get("/users/")
-    assert response.status_code == HTTPStatus.OK
-    assert response.json() == {"users": [] }
+    assert response.status_code == HTTPStatus.CONFLICT
+    assert response.json() == {"detail": "Username or Email alredy exists"}
 
 
 # valida quando nao tem nada e quando tem,
@@ -84,7 +79,7 @@ def test_read_users_with_users(client, user):
 
 def test_update_user(client, user):
     response = client.put(
-        "/users/1",
+        f"/users/{user.id}",
         json={
             "username": "alice",
             "email": "alice@example.com",
@@ -100,11 +95,10 @@ def test_update_user(client, user):
     }
 
 
-def test_update_not_found(client, user):
-    user_id = "999"  # id que o usuario esta tentando alterar
+def test_update_not_found(client):
 
     response = client.put(
-        f"/users/{user_id}",
+        "/users/999",
         json={
             "username": "alice",
             "email": "alice@example.com",
@@ -113,29 +107,27 @@ def test_update_not_found(client, user):
     )
 
     assert response.status_code == HTTPStatus.NOT_FOUND
-
     assert response.json() == {"detail": "User not found"}
 
 
-def test_delete_user(client):
-    response = client.delete("/users/1")
+def test_delete_user(client, user):
+    response = client.delete(f"/users/{user.id}")
 
     assert response.status_code == HTTPStatus.OK
-    assert response.json() == {'message': 'User deleted'}
+    assert response.json() == {"message": "User deleted"}
 
 
 def test_delete_not_found(client):
-    user_id = "999"  # id que o usuario esta tentando alterar
-
-    response = client.delete(f"/users/{user_id}")
+    response = client.delete("/users/999")
 
     assert response.status_code == HTTPStatus.NOT_FOUND
 
     assert response.json() == {"detail": "User not found"}
-    
+
+
 def test_update_integrity_error(client, user):
     client.post(
-        '/users',
+        "/users",
         json={
             "username": "fausto",
             "email": "fausto@example.com",
@@ -144,7 +136,7 @@ def test_update_integrity_error(client, user):
     )
 
     response = client.put(
-        f'/users/{user.id}',
+        f"/users/{user.id}",
         json={
             "username": "fausto",
             "email": "fausto@example.com",
@@ -153,4 +145,4 @@ def test_update_integrity_error(client, user):
     )
 
     assert response.status_code == HTTPStatus.CONFLICT
-    assert response.json() == {'detail': 'Username or Email alredy exists'}
+    assert response.json() == {"detail": "Username or Email alredy exists"}
