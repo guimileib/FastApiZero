@@ -14,7 +14,7 @@ from fastapi_zero.schemas import (
     UserPublic,
     UserSchema,
 )
-from fastapi_zero.security import get_password_hash
+from fastapi_zero.security import get_password_hash, verify_password
 
 app = FastAPI(title="FastAPI Succeed")
 
@@ -145,4 +145,17 @@ def read_user_name(user_id: int, session=Depends(get_session)):
 def login_for_acess_token(
     form_data: OAuth2PasswordRequestForm = Depends(),
     session=Depends(get_session),
-): ...
+):
+    # uso email para verificar, mas o campo chama username
+    user_db = session.where(User.email == form_data.username)
+    if not user_db:
+        raise HTTPException(
+            status_code=HTTPStatus.UNAUTHORIZED,
+            detail="Incorrect email or password",
+        )
+    # verifico a senha do banco bate com a enviada no campo
+    if not verify_password(form_data.password, user_db.password):
+        raise HTTPException(
+            status_code=HTTPStatus.UNAUTHORIZED,
+            detail="Incorrect email or password",
+        )
