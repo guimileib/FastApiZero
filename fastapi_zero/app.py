@@ -13,6 +13,7 @@ from fastapi_zero.schemas import (
     UserList,
     UserPublic,
     UserSchema,
+    JwtToken,
 )
 from fastapi_zero.security import get_password_hash, verify_password
 
@@ -141,7 +142,7 @@ def read_user_name(user_id: int, session=Depends(get_session)):
         return user_db
 
 
-@app.post("/token")
+@app.post("/token", status_code=HTTPStatus.OK, response_model=JwtToken)
 def login_for_acess_token(
     form_data: OAuth2PasswordRequestForm = Depends(),
     session=Depends(get_session),
