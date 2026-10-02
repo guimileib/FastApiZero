@@ -10,6 +10,7 @@ from sqlalchemy.pool import StaticPool
 from fastapi_zero.app import app
 from fastapi_zero.database import get_session
 from fastapi_zero.models import User, table_registry
+from fastapi_zero.security import get_password_hash
 
 """
 Esse teste tem 3 etapas (AAA)
@@ -77,9 +78,17 @@ def mock_db_time():
 # criando uma fixture para que o usuario esteja presente
 @pytest.fixture
 def user(session):
-    user = User(username="Teste", email="teste@test.com", password="teste123")
+    pwd = "teste123"
+    user = User(
+        username="Teste",
+        email="teste@test.com",
+        password=get_password_hash(pwd),
+    )
+
     session.add(user)
     session.commit()
     session.refresh(user)
+
+    user.clean_password = pwd
 
     return user

@@ -9,13 +9,17 @@ from sqlalchemy.exc import IntegrityError
 from fastapi_zero.database import get_session
 from fastapi_zero.models import User
 from fastapi_zero.schemas import (
+    JwtToken,
     Message,
     UserList,
     UserPublic,
     UserSchema,
-    JwtToken,
 )
-from fastapi_zero.security import get_password_hash, verify_password
+from fastapi_zero.security import (
+    create_acess_token,
+    get_password_hash,
+    verify_password,
+)
 
 app = FastAPI(title="FastAPI Succeed")
 
@@ -62,7 +66,7 @@ def create_user(user: UserSchema, session=Depends(get_session)):
     db_user = User(
         username=user.username,
         email=user.email,
-        password=user.password,
+        password=get_password_hash(user.password),
     )
 
     session.add(db_user)  # adiciona na sessão
@@ -148,7 +152,9 @@ def login_for_acess_token(
     session=Depends(get_session),
 ):
     # uso email para verificar, mas o campo chama username
-    user_db = session.where(User.email == form_data.username)
+    user_db = session.scalar(
+        select(User).where(User.email == form_data.username)
+    )
     if not user_db:
         raise HTTPException(
             status_code=HTTPStatus.UNAUTHORIZED,
@@ -160,3 +166,6 @@ def login_for_acess_token(
             status_code=HTTPStatus.UNAUTHORIZED,
             detail="Incorrect email or password",
         )
+
+    access_token = create_acess_token({"sub": user_db.email})
+    return {"access_token": access_token, "token_type": "Bearer"}
