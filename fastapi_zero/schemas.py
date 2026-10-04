@@ -24,5 +24,5 @@ class UserList(BaseModel):
 
 
 class JwtToken(BaseModel):
-    acess_token: str
+    access_token: str
     token_type: str

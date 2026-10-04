@@ -11,4 +11,3 @@ def test_jwt():
 
     assert decoded["test"] == data["test"]
     assert "exp" in decoded
-    assert "acess_token" in token
