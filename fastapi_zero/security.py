@@ -59,23 +59,21 @@ def get_current_user(
 ):
     credentials_exception = HTTPException(
         status_code=HTTPStatus.UNAUTHORIZED,
-        detail='Could not validate credentials',
-        headers={'WWW-Authenticate': 'Bearer'},
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
     )
 
     try:
         # tentamos fazer decode do token, mas pode
         # ser que enviem coisas que nao sejam token
         payload = decode(token, SECRET_KEY, algorithms=ALGORITHM)
-        subject_email = payload.get('sub')
+        subject_email = payload.get("sub")
         if not subject_email:
             raise credentials_exception
     except DecodeError:
         raise credentials_exception
 
-    user_db = session.scalar(
-            select(User).where(User.email == subject_email)
-    )
+    user_db = session.scalar(select(User).where(User.email == subject_email))
 
     if not user_db:
         raise credentials_exception

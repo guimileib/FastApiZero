@@ -101,12 +101,11 @@ def update_user(
     user_id: int,
     user: UserSchema,
     session=Depends(get_session),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
     if current_user.id != user_id:
         raise HTTPException(
-            status_code=HTTPStatus.FORBIDDEN,
-            detail='Not enough permissions'
+            status_code=HTTPStatus.FORBIDDEN, detail="Not enough permissions"
         )
 
     try:
@@ -133,12 +132,11 @@ def delete_user(
     user_id: int,
     session=Depends(get_session),
     current_user=Depends(get_current_user),
-    ):
+):
 
     if current_user.id != user_id:
         raise HTTPException(
-            status_code=HTTPStatus.FORBIDDEN,
-            detail='Not enough permissions'
+            status_code=HTTPStatus.FORBIDDEN, detail="Not enough permissions"
         )
 
     session.delete(current_user)
