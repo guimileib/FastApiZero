@@ -18,7 +18,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 # provisorio
 SECRET_KEY = "reguacabelo123"
 ALGORITHM = "HS256"
-ACESS_TOKEN_EXPIRE_MINUTES = 30
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 pwd_context = PasswordHash.recommended()
 
@@ -36,13 +36,13 @@ def verify_password(plain_password: str, hashed_password: str):
 
 
 # compara a senha com o hash que tem no banco de dados
-def create_acess_token(data: dict):
+def create_access_token(data: dict):
     # data = {'sub': email, ...}
     to_encode = data.copy()  # aqui é a claim
     # calculando a hora de agora, para durar 30 minutos
     # do tempo que for chamado + o tempo do token expirar
     expire = datetime.now(tz=ZoneInfo("UTC")) + timedelta(
-        minutes=ACESS_TOKEN_EXPIRE_MINUTES
+        minutes=ACCESS_TOKEN_EXPIRE_MINUTES
     )
     # retorne o tempo de expiração
     to_encode.update({"exp": expire})

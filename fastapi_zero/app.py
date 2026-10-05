@@ -16,7 +16,7 @@ from fastapi_zero.schemas import (
     UserSchema,
 )
 from fastapi_zero.security import (
-    create_acess_token,
+    create_access_token,
     get_current_user,
     get_password_hash,
     verify_password,
@@ -162,7 +162,7 @@ def read_user_name(user_id: int, session=Depends(get_session)):
 
 
 @app.post("/token", status_code=HTTPStatus.OK, response_model=JwtToken)
-def login_for_acess_token(
+def login_for_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(),
     session=Depends(get_session),
 ):
@@ -182,5 +182,5 @@ def login_for_acess_token(
             detail="Incorrect email or password",
         )
 
-    access_token = create_acess_token({"sub": user_db.email})
+    access_token = create_access_token({"sub": user_db.email})
     return {"access_token": access_token, "token_type": "Bearer"}
