@@ -5,14 +5,14 @@ from fastapi_zero.schemas import UserPublic
 
 def test_root_dev_retornar_hello_world(client):
 
-    response = client.get("/")
+    response = client.get("/root/")
 
     assert response.json() == {"message": "Olá mundo!"}
     assert response.status_code == HTTPStatus.OK
 
 
 def test_root_dev_retornar_hello_world_in_html(client):
-    response = client.get("/exercicio00")
+    response = client.get("/users/exercicio00")
 
     assert response.status_code == HTTPStatus.OK
     assert (
@@ -162,7 +162,7 @@ def test_update_integrity_error(client, user, token):
 
 def test_get_token(client, user):
     response = client.post(
-        "/token",
+        "/auth/token",
         data={"username": user.email, "password": user.clean_password},
     )
 

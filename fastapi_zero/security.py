@@ -13,7 +13,7 @@ from fastapi_zero.database import get_session
 from fastapi_zero.models import User
 
 # direcionamento para endpoint /token
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token")
 
 # provisorio
 SECRET_KEY = "reguacabelo123"

@@ -34,12 +34,13 @@ def test_validate_credentials_exception(client):
     assert response.status_code == HTTPStatus.UNAUTHORIZED
     assert response.json() == {"detail": "Could not validate credentials"}
 
+
 def test_jwt_sem_sub(client):
     # teste quando nao traz a claim com sub, uma deiferente
-    token = create_access_token({'diff-sub': 'test'})
+    token = create_access_token({"diff-sub": "test"})
 
     response = client.delete(
-        '/users/1', headers={'Authorization': f'Bearer {token}'}
+        "/users/1", headers={"Authorization": f"Bearer {token}"}
     )
 
     assert response.status_code == HTTPStatus.UNAUTHORIZED
