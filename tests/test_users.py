@@ -1,0 +1,160 @@
+from http import HTTPStatus
+
+from fastapi_zero.schemas import UserPublic
+
+
+def test_root_dev_retornar_hello_world(client):
+
+    response = client.get("/root/")
+
+    assert response.json() == {"message": "Olá mundo!"}
+    assert response.status_code == HTTPStatus.OK
+
+
+def test_root_dev_retornar_hello_world_in_html(client):
+    response = client.get("/users/exercicio00")
+
+    assert response.status_code == HTTPStatus.OK
+    assert (
+        """
+    <html>
+        <body>
+            <h1>Hello, World!</h1>
+        </body>
+    </html>"""
+        in response.text
+    )
+
+
+def test_create_user(client):
+    response = client.post(
+        "/users/",
+        json={
+            "username": "bob",
+            "email": "bob@example.com",
+            "password": "secret",
+        },
+    )
+
+    assert response.status_code == HTTPStatus.CREATED
+    assert response.json() == {
+        "id": 1,
+        "email": "bob@example.com",
+        "username": "bob",
+    }
+
+
+def test_alredy_create_user(client, user, token):
+    client.post(
+        "/users/",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "username": "bob",
+            "email": "bob@example.com",
+            "password": "secret",
+        },
+    )
+
+    response = client.put(
+        f"/users/{user.id}",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "username": "bob",
+            "email": "bob@example.com",
+            "password": "secret",
+        },
+    )
+
+    assert response.status_code == HTTPStatus.CONFLICT
+    assert response.json() == {"detail": "Username or Email alredy exists"}
+
+
+# valida quando nao tem nada e quando tem,
+# criamos uma fixture para isso em conftest.py
+def test_read_users_with_users(client, user, token):
+    user_schema = UserPublic.model_validate(user).model_dump()
+    response = client.get(
+        "/users/", headers={"Authorization": f"Bearer {token}"}
+    )
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == {"users": [user_schema]}
+
+
+def test_update_user(client, user, token):
+    response = client.put(
+        f"/users/{user.id}",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "username": "alice",
+            "email": "alice@example.com",
+            "password": "secret",
+        },
+    )
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == {
+        "username": "alice",
+        "email": "alice@example.com",
+        "id": 1,
+    }
+
+
+def test_update_forbidden(client, user, token):
+    response = client.put(
+        "/users/999",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "username": "alice",
+            "email": "alice@example.com",
+            "password": "secret",
+        },
+    )
+
+    assert response.status_code == HTTPStatus.FORBIDDEN
+    assert response.json() == {"detail": "Not enough permissions"}
+
+
+def test_delete_user(client, user, token):
+    response = client.delete(
+        f"/users/{user.id}",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == {"message": "User deleted"}
+
+
+def test_delete_forbidden(client, token):
+    response = client.delete(
+        "/users/999",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response.status_code == HTTPStatus.FORBIDDEN
+
+    assert response.json() == {"detail": "Not enough permissions"}
+
+
+def test_update_integrity_error(client, user, token):
+    client.post(
+        "/users",
+        json={
+            "username": "fausto",
+            "email": "fausto@example.com",
+            "password": "secret",
+        },
+    )
+
+    response = client.put(
+        f"/users/{user.id}",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "username": "fausto",
+            "email": "fausto@example.com",
+            "password": "mynewpass",
+        },
+    )
+
+    assert response.status_code == HTTPStatus.CONFLICT
+    assert response.json() == {"detail": "Username or Email alredy exists"}
